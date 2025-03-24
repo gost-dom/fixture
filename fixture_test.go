@@ -28,14 +28,18 @@ import (
 //
 // - HTTPHandlerFixture - create an new http.ServeMux
 // - HTTPServerFixture - launches an ephemeral test server, serving the HTTPHandlerFixture's http handler
-// - OpenStreetMapFixture - Initializes OSM with the base URL from the HTTPServerFixture
+// - OpenStreetMapFixture - Initializes OSM, setting the BaseURL with a value exposed from HTTPServerFixture
 //
 // The test creates an inline struct to get the two components it needs, the
 // OpenStreetMapFixture to exercise the code, and the HTTPHandlerFixture to
 // setup a canned response.
 //
-// The test server is implicitly closed, as it has a `Cleanup()` method.
+// HTTPServerFixture that controls the server is a detail that is not visible in
+// the test. Both setup and cleanup of the ephemeral HTTP server happens
+// automatically
 func TestOpenStreetMap(t *testing.T) {
+	t.Parallel()
+
 	fix, ctrl := fixture.Init(t, &struct {
 		*OpenStreetMapFixture
 		*HTTPHandlerFixture
@@ -78,6 +82,8 @@ func TestOpenStreetMap(t *testing.T) {
 }
 
 func TestOpenStreetMapQuery(t *testing.T) {
+	t.Parallel()
+
 	fix, ctrl := fixture.Init(t, &struct {
 		*OpenStreetMapFixture
 		*HTTPHandlerFixture
@@ -101,6 +107,8 @@ func TestOpenStreetMapQuery(t *testing.T) {
 }
 
 func TestCleanup(t *testing.T) {
+	t.Parallel()
+
 	recorder := &CleanupRecorder{TB: t}
 	fix, ctrl := fixture.Init(recorder, &struct {
 		*OpenStreetMapFixture
@@ -110,6 +118,7 @@ func TestCleanup(t *testing.T) {
 	if !fix.OpenStreetMapFixture.ServerFixture.IsOpen() {
 		t.Fatal("Server should have been open")
 	}
+
 	recorder.Replay()
 	if fix.OpenStreetMapFixture.ServerFixture.IsOpen() {
 		t.Fatal("Server should have been closed")
