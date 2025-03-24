@@ -100,9 +100,9 @@ fields:
 }
 
 // trySetTB sets the testing.TB instance on the value if it implements
-// fixtureInit. If not, the call is ignored
+// fixtureInit. If not, the method does nothing.
 func (s *FixtureSetup[T]) trySetTB(val any) {
-	if init, ok := val.(fixtureInit); ok {
+	if init, ok := val.(FixtureInit); ok {
 		init.SetTB(s.TB)
 	}
 }

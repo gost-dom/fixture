@@ -24,13 +24,16 @@ import (
 //	  f.Error("Data was assume to be a valid fmt.Stringer in this context")
 //	  return nil
 //	}
+//
+// Fixture is merely a convience type. Any fixture that implements [FixtureInit]
+// will receive the current testing.TB instance.
 type Fixture struct{ testing.TB }
 
 func (f *Fixture) SetTB(tb testing.TB) { f.TB = tb }
 
-// fixtureInit should idiomatically have been called setTBer, but that just
+// FixtureInit should idiomatically have been called setTBer, but that just
 // feels awkward.
-type fixtureInit interface{ SetTB(testing.TB) }
+type FixtureInit interface{ SetTB(testing.TB) }
 
 type setuper interface{ Setup() }
 
@@ -73,6 +76,19 @@ func (f FixtureSetup[T]) include(val reflect.Value) bool {
 	return f.defaultInclude(val)
 }
 
+// Init initializes the fixture. During initialization it will perform the
+// following on all fixture types.
+//
+// - Call `SetTB(testing.TB)` on any types that implement it.
+// - Iterate all struct fields.
+// - Create new fixture types
+//
+// Both `SetTB` and `Setup` functions must be idempotent. When a fixture embeds
+// a type that implement one of those methods, the method will be called on both
+// the
+//
+// A fixture type is any type that has the "Fixture" suffix. Experimental
+// support for override exist by consuming the [FixtureSetup] type directly.
 func Init[T any](
 	t testing.TB,
 	fixture T,
