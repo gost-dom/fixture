@@ -1,6 +1,16 @@
 # Gost-DOM Fixture
 
-> [!WARNING]
+_Fixture_ is a tool to help setup test fixtures[^1], i.e., a component in the
+test suite that places the SUT[^2] in a controlled context.
+
+This is intended for the case when:
+
+- Setting up the SUT is non-trivial
+- Multiple tests needs to use the SUT in an identical or similar manner
+
+_Fixture_ is inspired by [pytest fixtures](./docs/pytest-fixtures.md)
+
+> [!NOTE]
 >
 > The word "fixture" can be confusing in this document, it can refer to :
 >
@@ -12,16 +22,6 @@
 > typography. I experimented with an alternate name for the library, but I felt
 > "fixture" is the right name for the library, and clarity in the readme file
 > wasn't a good enough reason to rename.
-
-_Fixture_ is a tool to help setup test fixtures[^1], i.e., a component in the
-test suite that places the SUT[^2] in a controlled context.
-
-This is intended for the case when:
-
-- Setting up the SUT is non-trivial
-- Multiple tests needs to use the SUT in an identical or similar manner
-
-_Fixture_ is inspired by [pytest fixtures](./docs/pytest-fixtures.md)
 
 [^1]: Fixture is a metaphor from mechanical engineering. A fixture holds a piece
     in place, e.g., when testing its mechanical properties. For software testing

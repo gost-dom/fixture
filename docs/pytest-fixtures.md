@@ -1,7 +1,22 @@
 # How fixtures work in pytest
 
-The fixture model in pytest is a mini-IOC framework intended for test use cases.
-It creates the ability to create common setup code
+_Fixture_ is inspired by fixtured in pytest ([pytest
+documentation on fixtures](https://docs.pytest.org/en/6.2.x/fixture.html)) which
+separates itself from other test 
+
+Every other structured test framework has some kind of "inheritance" model for
+how fixtures can be extended. OOP class based allows sub-classes to extend
+fixtures from super classes. [RSpec](), [mocha](), [jasmine]() has a nested
+structure, where one group is nested in _one other_ group.
+
+Pytest provides a more flexible mechanism that allows fixtures to describe
+different aspects of setting up a test harness, and mix different fixtures in a
+much more flexible model.
+
+In pytest, a test can depend on more than one fixture, and fixtures can depend
+on other fixtures. The same fixture is only created once, so if a test X depends
+on fixture A and B, and fixture A itself depend on fixture B, A's B is the same
+as X's B.
 
 In this hypothetical example, a `Processor` write an output file. Some tests may
 care about the output file, creatingin initial contents, or verifying the
@@ -38,5 +53,11 @@ a unique output file name transparent.
 But if the test wants to depend on the output file, it can be added as a
 dependency.
 
-Read more about pytest fixtures on [pytest
-documentation](https://docs.pytest.org/en/6.2.x/fixture.html)
+_Fixture_ does not try to replicate all behaviour of pytest, just the core idea
+how 
+
+Some features in pytest may solve problem that don't exist in Go when you rely
+more on actual types, and other problems may have a more natural solution in Go.
+
+E.g., cleanup is implicitly accomplished by integrating to Go's own testing
+framework's cleanup functionality.
