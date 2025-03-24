@@ -37,19 +37,18 @@ type FixtureInit interface{ SetTB(testing.TB) }
 
 type setuper interface{ Setup() }
 
+type cleanuper interface{ Cleanup() }
+
 // NullSetuper is just a setuper that ignores setup calls on the null instance
 type nullSetuper struct{}
 
-func (s *nullSetuper) Setup() {}
+func (s *nullSetuper) Setup()   {}
+func (s *nullSetuper) Cleanup() {}
+
+/* -------- setuper -------- */
 
 // setups is a type that lets a slice of setuper's be a setuper themself
 type setups []setuper
-
-func (s setups) Setup() {
-	for _, ss := range s {
-		ss.Setup()
-	}
-}
 
 func (s *setups) append(setup setuper) { *s = append(*s, setup) }
 
@@ -58,6 +57,32 @@ func (s *setups) append(setup setuper) { *s = append(*s, setup) }
 func (s *setups) tryAppend(val any) {
 	if setup, ok := val.(setuper); ok {
 		s.append(setup)
+	}
+}
+
+func (s setups) Setup() {
+	for _, ss := range s {
+		ss.Setup()
+	}
+}
+
+/* -------- cleanuper -------- */
+
+type cleanups []cleanuper
+
+func (c *cleanups) append(cleanup cleanuper) { *c = append(*c, cleanup) }
+
+// tryAppend appends the value to the list of setups if it implements interfaces
+// cleanuper. If not the method does nothing.
+func (c *cleanups) tryAppend(val any) {
+	if cleanup, ok := val.(cleanuper); ok {
+		c.append(cleanup)
+	}
+}
+
+func (c cleanups) Cleanup() {
+	for _, cc := range c {
+		cc.Cleanup()
 	}
 }
 

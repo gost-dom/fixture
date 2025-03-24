@@ -33,26 +33,33 @@ func (f *FixtureSetup[T]) Init() setuper {
 	}
 	vType = vType.Elem()
 	f.pkgPath = vType.PkgPath()
-	return f.init(reflect.ValueOf(f.Fixture))
+	setups, cleanups := f.init(reflect.ValueOf(f.Fixture))
+	f.TB.Cleanup(cleanups.Cleanup)
+	return setups
 }
 
-func (f *FixtureSetup[T]) init(val reflect.Value) setuper {
+func (f *FixtureSetup[T]) init(val reflect.Value) (setuper, cleanuper) {
 	var setups = new(setups)
+	var cleanups = new(cleanups)
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
-			return &nullSetuper{}
+			n := &nullSetuper{}
+			return n, n
 		}
 		val = val.Elem()
 	}
 
 	typ := val.Type()
 	if typ.Kind() == reflect.Struct {
-		setups.append(f.initStruct(val, typ))
+		s, c := f.initStruct(val, typ)
+		setups.append(s)
+		cleanups.append(c)
 	}
 
 	if !val.CanAddr() {
 		asAny := val.Interface()
 		setups.tryAppend(asAny)
+		cleanups.tryAppend(asAny)
 		f.trySetTB(asAny)
 	} else {
 		// val must be addressable, as both Setup and Init are mutating functions.
@@ -67,13 +74,15 @@ func (f *FixtureSetup[T]) init(val reflect.Value) setuper {
 
 		asAny := val.Addr().Interface()
 		setups.tryAppend(asAny)
+		cleanups.tryAppend(asAny)
 		f.trySetTB(asAny)
 	}
-	return setups
+	return setups, cleanups
 }
 
-func (f *FixtureSetup[T]) initStruct(val reflect.Value, typ reflect.Type) *setups {
+func (f *FixtureSetup[T]) initStruct(val reflect.Value, typ reflect.Type) (*setups, *cleanups) {
 	var setups = new(setups)
+	var cleanups = new(cleanups)
 fields:
 	for _, field := range reflect.VisibleFields(typ) {
 		if len(field.Index) > 1 || !field.IsExported() {
@@ -94,9 +103,11 @@ fields:
 			fieldVal.Set(reflect.New(field.Type.Elem()))
 			f.depVals = append(f.depVals, fieldVal)
 		}
-		setups.append(f.init(fieldVal))
+		s, c := f.init(fieldVal)
+		setups.append(s)
+		cleanups.append(c)
 	}
-	return setups
+	return setups, cleanups
 }
 
 // trySetTB sets the testing.TB instance on the value if it implements
