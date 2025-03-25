@@ -7,6 +7,11 @@ This is intended for the case when:
 
 - Setting up the SUT is non-trivial
 - Multiple tests needs to use the SUT in an identical or similar manner
+- Simple init functions tend to litter test code with noise, hiding the essence
+  of the test.
+
+Using _Fixture_ adds some complexity to test through indirection, so be sure you
+have the problem it solves before using it.
 
 _Fixture_ is inspired by [pytest fixtures](./docs/pytest-fixtures.md)
 
@@ -69,7 +74,7 @@ The `Init` function will return the modified fixture, and a value with a
 
 ## Be aware
 
-> [!DANGER]
+> [!CAUTION]
 >
 > _Fixture_ doesn't include a cyclic dependency check. If your fixtures have a
 > cyclick dependency, that could possibly result in infinite recursion
